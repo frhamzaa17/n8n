@@ -1,0 +1,424 @@
+﻿{
+    "name":  "Hourly Stock Portfolio Updates",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "field":  "hours"
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "id":  "db827db3-4846-4069-9d79-3abd9eff6adc",
+                      "name":  "Every Hour",
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       1568,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "sendTo":  "={{ $env.GMAIL_SEND_TO }}",
+                                         "subject":  "=Stock Portfolio Update - {{ $now.toFormat(\"MMM d, yyyy h:mm a\") }}",
+                                         "message":  "<!DOCTYPE html>\n<html>\n<head><meta charset=\"UTF-8\"></head>\n<body style=\"margin:0;padding:0;background:#f0f4f8;font-family:Helvetica,Arial,sans-serif;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"padding:24px 16px;background:#f0f4f8;\">\n<tr><td align=\"center\">\n<table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;width:100%;\">\n\n  <!-- ACCENT TOP -->\n  <tr><td style=\"background:linear-gradient(90deg,#2563eb,#7c3aed,#0891b2);height:4px;border-radius:12px 12px 0 0;\"></td></tr>\n\n  <!-- HEADER -->\n  <tr><td style=\"background:#1e2d4f;padding:32px 40px;text-align:center;\">\n    <p style=\"margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:3px;color:#60a5fa;\">PORTFOLIO MONITOR</p>\n    <h1 style=\"margin:0 0 8px;font-size:28px;font-weight:800;color:#ffffff;\">Daily Market Brief</h1>\n    <p style=\"margin:0;font-size:13px;color:#94a3b8;\">{{ $now.toFormat(\"EEEE, MMMM d, yyyy\") }} | {{ $now.toFormat(\"h:mm a\") }} IST</p>\n  </td></tr>\n\n  <!-- STATS BAR -->\n  <tr><td style=\"background:#162040;padding:12px 40px;border-top:1px solid #1e3a5f;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>\n\n      <td align=\"center\" width=\"33%\" style=\"border-right:1px solid #1e3a5f;padding:8px;\">\n        <p style=\"margin:0;font-size:10px;letter-spacing:2px;color:#64748b;\">MARKET SENTIMENT</p>\n        <p style=\"margin:4px 0 0;font-size:14px;font-weight:700;color:{{ $json.sentimentColor }};\">{{ $json.sentimentEmoji }} {{ $json.overallSentiment }}</p>\n        <p style=\"margin:2px 0 0;font-size:10px;color:#64748b;\">Bullish: {{ $json.bullishCount }} &nbsp; Neutral: {{ $json.neutralCount }} &nbsp; Bearish: {{ $json.bearishCount }}</p>\n      </td>\n\n      <td align=\"center\" width=\"33%\" style=\"border-right:1px solid #1e3a5f;padding:8px;\">\n        <p style=\"margin:0 0 6px;font-size:10px;letter-spacing:2px;color:#64748b;\">HOT STOCKS</p>\n        {{ $json.hotStocksHTML }}\n      </td>\n\n      <td align=\"center\" width=\"33%\" style=\"padding:8px;\">\n        <p style=\"margin:0;font-size:10px;letter-spacing:2px;color:#64748b;\">COVERAGE</p>\n        <p style=\"margin:4px 0 0;font-size:14px;font-weight:700;color:#a78bfa;\">{{ $json.total }} STOCKS</p>\n        <p style=\"margin:2px 0 0;font-size:10px;color:#64748b;\">NSE / BSE</p>\n      </td>\n\n    </tr></table>\n  </td></tr>\n\n  <!-- CONTENT -->\n  <tr><td style=\"background:#ffffff;padding:32px 40px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;\">\n    {{ $json.htmlContent }}\n  </td></tr>\n\n  <!-- FOOTER -->\n  <tr><td style=\"background:#1e2d4f;padding:20px 40px;text-align:center;border-radius:0 0 12px 12px;\">\n    <p style=\"margin:0 0 4px;font-size:13px;font-weight:600;color:#94a3b8;\">AI Portfolio Monitor</p>\n    <p style=\"margin:0;font-size:11px;color:#475569;\">{{ $now.toFormat(\"EEEE, MMMM d, yyyy\") }} | {{ $now.toFormat(\"h:mm a\") }} IST</p>\n  </td></tr>\n\n  <!-- ACCENT BOTTOM -->\n  <tr><td style=\"background:linear-gradient(90deg,#2563eb,#7c3aed,#0891b2);height:3px;border-radius:0 0 8px 8px;\"></td></tr>\n\n</table>\n</td></tr>\n</table>\n</body>\n</html>",
+                                         "options":  {
+                                                         "senderName":  "AI Portfolio Monitor"
+                                                     }
+                                     },
+                      "id":  "e34b32ea-c4de-4c41-a52d-18a60141948d",
+                      "name":  "Send Email Update",
+                      "type":  "n8n-nodes-base.gmail",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       4112,
+                                       1328
+                                   ],
+                      "webhookId":  "ffbc61fa-f4cf-4b1e-b338-00a817905158",
+                      "credentials":  {
+                                          "gmailOAuth2":  {
+                                                              "name":  "Gmail OAuth2 account"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "f6a9ad5d-1385-4e1e-b84c-a1666cd81e1d",
+                                                                                     "name":  "portfolioStocks",
+                                                                                     "value":  "={{ $env.PORTFOLIO_TICKERS || 'ZENTEC, RAILTEL, DIXONTECH, KPITTECH, OSWALPUMPS, M&M, MAXHEALTH, COFORGE, ACE, HPL, KAYNES' }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "8deaa7ea-4635-4630-b698-87237f47b83e",
+                      "name":  "Define Portfolio",
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       1792,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "fieldToSplitOut":  "stockList",
+                                         "options":  {
+                                                         "destinationFieldName":  "ticker"
+                                                     }
+                                     },
+                      "id":  "c283714a-1cde-40a6-8a6f-50b31d1d02bd",
+                      "name":  "Split Stocks",
+                      "type":  "n8n-nodes-base.splitOut",
+                      "typeVersion":  1,
+                      "position":  [
+                                       2352,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "aggregate":  "aggregateAllItemData",
+                                         "destinationFieldName":  "stockUpdates",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "a4901d50-1f86-488f-bb4d-6868f513112a",
+                      "name":  "Aggregate News",
+                      "type":  "n8n-nodes-base.aggregate",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3120,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "promptType":  "define",
+                                         "text":  "=STRICT RULE: Only analyze stocks listed here: {{ Object.keys($json.stockUpdates).join(', ') }}\nDo NOT add unlisted stocks or any stock not in the above list.\n\nYou are a financial analyst. Analyze these stock news updates:\n\n{{ JSON.stringify($json.stockUpdates, null, 2) }}\n\nFor EACH stock in the data write:\n## [TICKER]\n**Summary:** 2-3 sentence news summary\n**Sentiment:** Bullish / Bearish / Neutral - one line reason\n\nAdd a ## Portfolio Overview at the top.\nWrite in clean markdown. Only cover the stocks listed above.",
+                                         "options":  {
+                                                         "systemMessage":  "You are a financial analyst creating concise portfolio news reports. Format data clearly with proper HTML structure."
+                                                     }
+                                     },
+                      "id":  "09cdb9ba-edb3-4e44-acd0-b0b427f2fe5d",
+                      "name":  "Format Portfolio Report",
+                      "type":  "@n8n/n8n-nodes-langchain.agent",
+                      "typeVersion":  3.1,
+                      "position":  [
+                                       3552,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "meta-llama/llama-4-scout-17b-16e-instruct",
+                                         "options":  {
+                                                         "maxTokensToSample":  4000,
+                                                         "temperature":  0.3
+                                                     }
+                                     },
+                      "id":  "2d0fdaf7-d0d3-4cbd-a651-d80985101484",
+                      "name":  "Groq Model",
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatGroq",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3424,
+                                       1376
+                                   ],
+                      "credentials":  {
+                                          "groqApi":  {
+                                                          "name":  "Groq API account"
+                                                      }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "1",
+                                                                                     "name":  "stockList",
+                                                                                     "value":  "={{ $json.portfolioStocks.split(\",\").map(s => s.trim()) }}",
+                                                                                     "type":  "array"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "967621ed-087b-4eac-98d8-ffb15c382689",
+                      "name":  "Prepare Stock List",
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       2016,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "url":  "=https://news.google.com/rss/search?q={{ $json.ticker }}+stock+OR+{{ $json.ticker }}+earnings+OR+{{ $json.ticker }}+news&hl=en-IN&gl=IN&ceid=IN:en",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "b408dd1d-b7ee-42f0-bb4f-7dd775321e57",
+                      "name":  "Fetch Stock News",
+                      "type":  "n8n-nodes-base.rssFeedRead",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       2672,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "1",
+                                                                                     "name":  "ticker",
+                                                                                     "value":  "={{ $(\"Split Stocks\").item.json.ticker }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "2",
+                                                                                     "name":  "title",
+                                                                                     "value":  "={{ $json.title }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "3",
+                                                                                     "name":  "link",
+                                                                                     "value":  "={{ $json.link }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "4",
+                                                                                     "name":  "pubDate",
+                                                                                     "value":  "={{ $json.pubDate }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "5",
+                                                                                     "name":  "snippet",
+                                                                                     "value":  "={{ $json.contentSnippet }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "5d6dee0e-5e42-4f82-a73d-b0b7086eac8b",
+                      "name":  "Clean News Items",
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       2896,
+                                       1152
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "chatId":  "={{ $env.TELEGRAM_CHAT_ID }}",
+                                         "text":  "=*Portfolio Update - {{ $now.toFormat(\"MMM d, h:mm a\") }}*  {{ $json.output.slice(0, 3000) }}  _Powered by n8n_",
+                                         "additionalFields":  {
+                                                                  "parse_mode":  "Markdown"
+                                                              }
+                                     },
+                      "type":  "n8n-nodes-base.telegram",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       4112,
+                                       960
+                                   ],
+                      "id":  "8180e75b-72b7-4833-a71b-233336433956",
+                      "name":  "Send a text message",
+                      "webhookId":  "b973f9df-cb73-414b-b976-848a69ec4432",
+                      "credentials":  {
+                                          "telegramApi":  {
+                                                              "name":  "Telegram bot account"
+                                                          }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const stockUpdates = $input.first().json.stockUpdates;\n\nconst grouped = {};\nfor (const item of stockUpdates) {\n  const ticker = item.ticker;\n  if (!grouped[ticker]) grouped[ticker] = [];\n  grouped[ticker].push({\n    title: item.title,\n    pubDate: item.pubDate,\n    link: item.link\n  });\n}\n\n// Sort by date and take latest 3\nconst result = {};\nfor (const ticker of Object.keys(grouped)) {\n  result[ticker] = grouped[ticker]\n    .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))\n    .slice(0, 4);\n}\n\nreturn [{ json: { stockUpdates: result } }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3328,
+                                       1152
+                                   ],
+                      "id":  "5acbf0e7-407f-4f48-b123-675193a497e7",
+                      "name":  "Sorting and selecting info"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const md = $input.first().json.output;\nconst stockUpdates = $('Sorting and selecting info').first().json.stockUpdates || {};\nconst headlineMap = {};\nfor (const [ticker, articles] of Object.entries(stockUpdates)) {\n  headlineMap[ticker] = Array.isArray(articles) ? articles : [];\n}\n\n// Compute sentiment\nconst bullishCount = (md.match(/\\*\\*Sentiment:\\*\\* Bullish/g) || []).length;\nconst bearishCount = (md.match(/\\*\\*Sentiment:\\*\\* Bearish/g) || []).length;\nconst neutralCount = (md.match(/\\*\\*Sentiment:\\*\\* Neutral/g) || []).length;\nconst total = bullishCount + bearishCount + neutralCount;\n\nlet overallSentiment, sentimentColor, sentimentEmoji;\nif (bullishCount > bearishCount && bullishCount > neutralCount) {\n  overallSentiment = 'BULLISH'; sentimentColor = '#34d399'; sentimentEmoji = 'UP';\n} else if (bearishCount > bullishCount) {\n  overallSentiment = 'BEARISH'; sentimentColor = '#f87171'; sentimentEmoji = 'DOWN';\n} else {\n  overallSentiment = 'NEUTRAL'; sentimentColor = '#94a3b8'; sentimentEmoji = '-';\n}\n\n// Hot stocks\nconst bullishMatches = [...md.matchAll(/## ([A-Z&]+)[\\s\\S]*?\\*\\*Sentiment:\\*\\* Bullish/g)];\nconst bullishTickers = bullishMatches.map(m => ({\n  ticker: m[1].trim(),\n  articleCount: (headlineMap[m[1].trim()] || []).length\n})).sort((a, b) => b.articleCount - a.articleCount);\n\nconst hotStocksHTML = bullishTickers.slice(0, 3).map(s =>\n  `<span style=\"background:#0f3a2a;color:#34d399;font-size:11px;font-weight:700;padding:3px 8px;border-radius:12px;margin:2px;display:inline-block;\">HOT ${s.ticker}</span>`\n).join(' ') || '<span style=\"color:#64748b;font-size:11px;\">None today</span>';\n\n// Clean up markdown - remove excessive blank lines first\nconst cleaned = md.replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Split into sections by ## headers\nconst sections = cleaned.split(/^(?=## )/gm);\n\nlet html = '';\n\nfor (const section of sections) {\n  if (!section.trim()) continue;\n\n  const lines = section.trim().split('\\n');\n  const header = lines[0].replace(/^## /, '').trim();\n  const body = lines.slice(1).join('\\n').trim();\n\n  if (header === 'Portfolio Overview') {\n    const bodyHTML = body\n      .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')\n      .replace(/\\n/g, ' ');\n    html += `\n      <div style=\"background:#f0f7ff;border-left:3px solid #2563eb;border-radius:0 6px 6px 0;padding:12px 16px;margin:0 0 16px;\">\n        <p style=\"margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;color:#2563eb;\">PORTFOLIO OVERVIEW</p>\n        <p style=\"margin:0;font-size:13px;color:#334155;line-height:1.6;\">${bodyHTML}</p>\n      </div>`;\n    continue;\n  }\n\n  // Stock section\n  const headlines = headlineMap[header] || [];\n\n  // Parse body into summary and sentiment\n  const summaryMatch = body.match(/\\*\\*Summary:\\*\\*\\s*([\\s\\S]*?)(?=\\*\\*Sentiment:|$)/);\n  const sentimentMatch = body.match(/\\*\\*Sentiment:\\*\\*\\s*([^\\n]+)/);\n\n  const summaryText = summaryMatch \n    ? summaryMatch[1].trim().replace(/\\n/g, ' ').replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')\n    : body.replace(/\\n/g, ' ').replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>');\n\n  const sentimentRaw = sentimentMatch ? sentimentMatch[1].trim() : '';\n  let sentBg = '#f8fafc', sentBorder = '#e2e8f0', sentTextColor = '#475569', sentIcon = '-', sentLabel = 'NEUTRAL';\n  if (sentimentRaw.toLowerCase().startsWith('bullish')) {\n    sentBg = '#f0fdf4'; sentBorder = '#bbf7d0'; sentTextColor = '#166534'; sentIcon = 'UP'; sentLabel = 'BULLISH';\n  } else if (sentimentRaw.toLowerCase().startsWith('bearish')) {\n    sentBg = '#fef2f2'; sentBorder = '#fecaca'; sentTextColor = '#991b1b'; sentIcon = 'DOWN'; sentLabel = 'BEARISH';\n  }\n  const sentimentReason = sentimentRaw.replace(/^(Bullish|Bearish|Neutral)\\s*[--]?\\s*/i, '');\n\n  // Links\n  const linksHTML = headlines.map(h => {\n    const date = h.pubDate ? new Date(h.pubDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '';\n    return `<a href=\"${h.link || '#'}\" target=\"_blank\" style=\"display:block;text-decoration:none;padding:5px 8px;margin-bottom:4px;background:#f0f7ff;border-radius:5px;\">\n      <span style=\"font-size:11px;color:#1d4ed8;font-weight:500;line-height:1.3;display:block;\">Source: ${h.title || 'Read article'}</span>\n      <span style=\"font-size:10px;color:#94a3b8;\">Date: ${date}</span>\n    </a>`;\n  }).join('');\n\n  html += `\n    <div style=\"border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:12px;\">\n      <p style=\"margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#6366f1;\">${header}</p>\n      <p style=\"margin:0 0 8px;font-size:13px;color:#334155;line-height:1.6;\">${summaryText}</p>\n      <div style=\"background:${sentBg};border:1px solid ${sentBorder};border-radius:6px;padding:6px 10px;margin-bottom:${linksHTML ? '8px' : '0'};\">\n        <span style=\"font-size:12px;color:${sentTextColor};font-weight:700;\">${sentIcon} ${sentLabel}</span>\n        <span style=\"font-size:12px;color:${sentTextColor};\"> - ${sentimentReason}</span>\n      </div>\n      ${linksHTML ? `<div style=\"margin-top:6px;\"><p style=\"margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:1px;color:#94a3b8;\">SOURCE ARTICLES</p>${linksHTML}</div>` : ''}\n    </div>`;\n}\n\nreturn [{ json: {\n  htmlContent: html,\n  overallSentiment,\n  sentimentColor,\n  sentimentEmoji,\n  bullishCount,\n  bearishCount,\n  neutralCount,\n  total,\n  hotStocksHTML\n}}];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3872,
+                                       1328
+                                   ],
+                      "id":  "85598ed2-c05e-4784-8705-a6d9eadb297f",
+                      "name":  "Format Email Content"
+                  }
+              ],
+    "pinData":  {
+
+                },
+    "connections":  {
+                        "Every Hour":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Define Portfolio",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       },
+                        "Define Portfolio":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Prepare Stock List",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Split Stocks":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Fetch Stock News",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "Aggregate News":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Sorting and selecting info",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Format Portfolio Report":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Send a text message",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         },
+                                                                         {
+                                                                             "node":  "Format Email Content",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Groq Model":  {
+                                           "ai_languageModel":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Format Portfolio Report",
+                                                                            "type":  "ai_languageModel",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                       },
+                        "Prepare Stock List":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Split Stocks",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Fetch Stock News":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Clean News Items",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Clean News Items":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Aggregate News",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Sorting and selecting info":  {
+                                                           "main":  [
+                                                                        [
+                                                                            {
+                                                                                "node":  "Format Portfolio Report",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                       },
+                        "Format Email Content":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Send Email Update",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "tags":  [
+
+             ]
+}
+

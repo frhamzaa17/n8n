@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hourly Stock Portfolio Updates Workflow</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5d6b82;
+      --paper: #ffffff;
+      --line: #d8e0ec;
+      --soft: #f6f8fb;
+      --blue: #2764d8;
+      --teal: #078a8f;
+      --green: #178a56;
+      --red: #c74747;
+      --amber: #b66b00;
+      --shadow: 0 18px 50px rgba(28, 43, 68, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #eef3f8;
+    }
+
+    header, .hero { background: #10233f; color: #fff; }
+
+    .topbar, .hero-grid, .workflow-section {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.24), rgba(255,255,255,0)), var(--blue);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .brand h1 { margin: 0; font-size: 18px; line-height: 1.2; }
+    .brand p { margin: 2px 0 0; color: #a9b9cf; font-size: 13px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: #d7e4f5;
+      background: rgba(255,255,255,0.06);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+      animation: pulse 1.8s infinite;
+    }
+
+    .hero { padding: 34px 22px 46px; }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.94fr) minmax(320px, 1.06fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .intro {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 360px;
+    }
+
+    .intro h2 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(34px, 6vw, 68px);
+      line-height: 0.98;
+      letter-spacing: 0;
+      font-weight: 820;
+    }
+
+    .intro p {
+      margin: 22px 0 0;
+      max-width: 640px;
+      font-size: 17px;
+      line-height: 1.65;
+      color: #c4d1e3;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 28px;
+      max-width: 620px;
+    }
+
+    .metric {
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .metric span {
+      display: block;
+      color: #8fa3bc;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 7px;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .monitor {
+      background: #f9fbfe;
+      color: var(--ink);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 360px;
+    }
+
+    .monitor-title {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: #e8eef7;
+      border-bottom: 1px solid #d6deea;
+      font-size: 12px;
+      color: #536176;
+      font-weight: 700;
+    }
+
+    .window-dots { display: flex; gap: 6px; }
+    .window-dots span { width: 10px; height: 10px; border-radius: 50%; background: #c1cad7; }
+
+    .dashboard {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .chart-panel, .mail-panel, .log-panel {
+      background: #fff;
+      border: 1px solid #e0e6ef;
+      border-radius: 8px;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .mail-panel { grid-column: 2; grid-row: 1 / 3; }
+    .panel-label {
+      margin: 0 0 12px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #68768b;
+      font-weight: 780;
+    }
+
+    .bars {
+      height: 145px;
+      display: flex;
+      align-items: end;
+      gap: 9px;
+      border-bottom: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    .bar {
+      flex: 1;
+      min-width: 10px;
+      border-radius: 5px 5px 0 0;
+      background: var(--blue);
+      transform-origin: bottom;
+      animation: barWave 2.8s ease-in-out infinite;
+    }
+
+    .bar:nth-child(1) { height: 62%; }
+    .bar:nth-child(2) { height: 74%; animation-delay: .15s; background: var(--teal); }
+    .bar:nth-child(3) { height: 48%; animation-delay: .3s; background: var(--green); }
+    .bar:nth-child(4) { height: 86%; animation-delay: .45s; background: var(--blue); }
+    .bar:nth-child(5) { height: 58%; animation-delay: .6s; background: var(--amber); }
+    .bar:nth-child(6) { height: 70%; animation-delay: .75s; background: var(--teal); }
+
+    .mail-card {
+      border: 1px solid #dfe6f1;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .mail-head { background: #10233f; color: #fff; padding: 15px; }
+    .mail-head small { display: block; color: #88c5ff; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    .mail-head strong { display: block; margin-top: 6px; font-size: 18px; }
+
+    .sentiment-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid #dfe6f1;
+    }
+
+    .sentiment-row span {
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 780;
+      border-right: 1px solid #dfe6f1;
+    }
+
+    .sentiment-row span:last-child { border-right: 0; }
+
+    .mail-lines { padding: 13px; display: grid; gap: 9px; }
+    .mail-lines span { height: 10px; border-radius: 999px; background: #e7edf5; }
+    .mail-lines span:nth-child(2) { width: 82%; }
+    .mail-lines span:nth-child(3) { width: 68%; }
+    .mail-lines span:nth-child(4) { width: 91%; }
+
+    .log-list { display: grid; gap: 9px; }
+    .log-list span { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #526176; font-size: 12px; }
+    .log-list i { display: inline-block; width: 54px; height: 7px; border-radius: 999px; background: #dbe4ef; overflow: hidden; position: relative; }
+    .log-list i::after { content: ""; position: absolute; inset: 0; width: 32%; background: var(--blue); border-radius: inherit; animation: scan 1.7s ease-in-out infinite; }
+
+    .workflow-section { margin-top: -24px; padding: 0 22px 42px; }
+
+    .flow-board {
+      position: relative;
+      background: var(--paper);
+      border: 1px solid #dfe7f2;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .flow-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fbfcfe;
+    }
+
+    .flow-head h3 { margin: 0; font-size: 18px; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+    button {
+      border: 1px solid #cad5e5;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button[aria-pressed="true"], button:hover {
+      border-color: var(--blue);
+      color: #174ea6;
+      background: #eef5ff;
+    }
+
+    .flow-canvas {
+      position: relative;
+      padding: 28px 22px 30px;
+      min-height: 430px;
+      overflow: hidden;
+    }
+
+    .flow-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(130px, 1fr));
+      gap: 14px;
+      z-index: 2;
+    }
+
+    .step {
+      min-height: 185px;
+      border: 1px solid #dce4ef;
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(24, 39, 63, 0.06);
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .step.active {
+      transform: translateY(-6px);
+      border-color: var(--blue);
+      box-shadow: 0 18px 38px rgba(39, 100, 216, 0.18);
+    }
+
+    .step-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #eef5ff;
+      color: var(--blue);
+    }
+
+    .step h4 { margin: 0; font-size: 15px; line-height: 1.25; }
+    .step p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .step code {
+      margin-top: auto;
+      display: block;
+      padding: 8px;
+      border-radius: 6px;
+      background: #f3f6fa;
+      color: #435168;
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .connector-track {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 156px;
+      height: 4px;
+      background: #d9e2ee;
+      z-index: 1;
+    }
+
+    .packet {
+      position: absolute;
+      top: 147px;
+      left: 6%;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 8px rgba(39, 100, 216, 0.14);
+      z-index: 3;
+      animation: travel 12s linear infinite;
+    }
+
+    .detail-panel {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+    }
+
+    .detail-card {
+      border: 1px solid #dfe7f2;
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+    }
+
+    .detail-card h3 { margin: 0 0 12px; font-size: 17px; }
+    .detail-card p { margin: 0; color: var(--muted); line-height: 1.65; font-size: 14px; }
+
+    .env-list { display: grid; gap: 10px; margin-top: 14px; }
+    .env-list code {
+      display: block;
+      padding: 10px 12px;
+      background: #f3f6fa;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      color: #344157;
+      overflow-wrap: anywhere;
+    }
+
+    .timeline { display: grid; gap: 10px; }
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eef2f7;
+    }
+    .timeline-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .timeline-item strong { color: var(--blue); font-size: 13px; }
+    .timeline-item span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .tree-board {
+      margin-top: 18px;
+      background: #fff;
+      border: 1px solid #dfe7f2;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .tree-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #fbfcfe;
+    }
+
+    .tree-head h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .tree-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .workflow-tree {
+      padding: 28px 18px 30px;
+      overflow-x: auto;
+    }
+
+    .tree {
+      min-width: 980px;
+      display: grid;
+      gap: 18px;
+      justify-items: center;
+    }
+
+    .tree-row {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      width: 100%;
+    }
+
+    .tree-row.stack {
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tree-row.outputs {
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .tree-node {
+      width: 178px;
+      min-height: 78px;
+      border: 1px solid #dce4ef;
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(24, 39, 63, 0.06);
+      position: relative;
+      z-index: 2;
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .tree-node.small {
+      width: 156px;
+      min-height: 68px;
+    }
+
+    .tree-node strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+      color: var(--ink);
+    }
+
+    .tree-node span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .tree-node.hot {
+      border-color: var(--blue);
+      box-shadow: 0 16px 32px rgba(39, 100, 216, 0.18);
+      transform: translateY(-4px);
+    }
+
+    .tree-line {
+      width: 3px;
+      height: 24px;
+      border-radius: 999px;
+      background: #d7e0ec;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tree-line::after,
+    .branch-line::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, var(--blue), transparent);
+      animation: lineFlow 2.4s linear infinite;
+    }
+
+    .model-branch {
+      width: 420px;
+      display: grid;
+      grid-template-columns: 1fr 156px;
+      align-items: center;
+      gap: 12px;
+      margin-top: -4px;
+    }
+
+    .branch-line {
+      height: 3px;
+      border-radius: 999px;
+      background: #d7e0ec;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splitter {
+      width: 430px;
+      height: 38px;
+      position: relative;
+    }
+
+    .splitter::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 3px;
+      height: 20px;
+      transform: translateX(-50%);
+      background: #d7e0ec;
+      border-radius: 999px;
+    }
+
+    .splitter::after {
+      content: "";
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      top: 19px;
+      height: 3px;
+      background: #d7e0ec;
+      border-radius: 999px;
+    }
+
+    .splitter span {
+      position: absolute;
+      top: 18px;
+      width: 3px;
+      height: 20px;
+      background: #d7e0ec;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .splitter span:first-child { left: 46px; }
+    .splitter span:last-child { right: 46px; }
+
+    .splitter span::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, var(--blue), transparent);
+      animation: lineFlow 2.4s linear infinite;
+    }
+
+    .tree-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tree-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #f8fafc;
+    }
+
+    .tree-legend i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    footer { padding: 24px 22px 34px; text-align: center; color: #64748b; font-size: 13px; }
+
+    .paused .packet,
+    .paused .bar,
+    .paused .log-list i::after,
+    .paused .pulse-dot,
+    .paused .tree-line::after,
+    .paused .branch-line::after,
+    .paused .splitter span::after {
+      animation-play-state: paused;
+    }
+
+    @keyframes pulse {
+      70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+    }
+
+    @keyframes barWave {
+      0%, 100% { transform: scaleY(.75); }
+      50% { transform: scaleY(1); }
+    }
+
+    @keyframes scan {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(260%); }
+    }
+
+    @keyframes travel {
+      0% { left: 6%; background: var(--blue); }
+      20% { left: 22%; background: var(--blue); }
+      40% { left: 39%; background: var(--teal); }
+      60% { left: 56%; background: var(--green); }
+      80% { left: 75%; background: var(--amber); }
+      100% { left: 93%; background: var(--blue); }
+    }
+
+    @keyframes lineFlow {
+      0% { transform: translateY(-110%); opacity: .3; }
+      50% { opacity: 1; }
+      100% { transform: translateY(110%); opacity: .3; }
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid, .detail-panel { grid-template-columns: 1fr; }
+      .intro { min-height: auto; }
+      .flow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .connector-track, .packet { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .topbar, .flow-head { align-items: flex-start; flex-direction: column; }
+      .status-pill { white-space: normal; }
+      .summary-strip, .dashboard, .flow-grid { grid-template-columns: 1fr; }
+      .mail-panel { grid-column: auto; grid-row: auto; }
+      .step { min-height: 160px; }
+      .timeline-item { grid-template-columns: 1fr; gap: 4px; }
+      .workflow-tree { padding: 20px 12px 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-4 3 3 5-7"/></svg>
+        </div>
+        <div>
+          <h1>Hourly Stock Portfolio Updates</h1>
+          <p>n8n automation workflow map</p>
+        </div>
+      </div>
+      <div class="status-pill"><span class="pulse-dot"></span><span>Runs every hour when activated in n8n</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-grid">
+        <div class="intro">
+          <h2 id="page-title">How the portfolio automation works</h2>
+          <p>The workflow wakes up on a schedule, reads your ticker list, collects recent market headlines, asks an AI model to summarize sentiment, then sends a compact Telegram alert and a polished HTML email.</p>
+          <div class="summary-strip" aria-label="Workflow summary">
+            <div class="metric"><span>Trigger</span><strong>Hourly</strong></div>
+            <div class="metric"><span>Sources</span><strong>RSS News</strong></div>
+            <div class="metric"><span>Outputs</span><strong>Email + Chat</strong></div>
+          </div>
+        </div>
+
+        <div class="monitor" aria-label="Animated portfolio report preview">
+          <div class="monitor-title">
+            <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span>AI Portfolio Monitor</span>
+          </div>
+          <div class="dashboard">
+            <div class="chart-panel">
+              <p class="panel-label">Market movement</p>
+              <div class="bars" aria-hidden="true"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+            </div>
+            <div class="mail-panel">
+              <p class="panel-label">Email report</p>
+              <div class="mail-card">
+                <div class="mail-head"><small>Portfolio monitor</small><strong>Daily Market Brief</strong></div>
+                <div class="sentiment-row"><span style="color: var(--green)">Bullish</span><span style="color: var(--amber)">Neutral</span><span style="color: var(--red)">Bearish</span></div>
+                <div class="mail-lines" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <div class="log-panel">
+              <p class="panel-label">Execution log</p>
+              <div class="log-list"><span>Fetch headlines <i></i></span><span>Analyze sentiment <i></i></span><span>Send updates <i></i></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workflow-section" aria-labelledby="flow-title">
+      <div class="flow-board">
+        <div class="flow-head">
+          <h3 id="flow-title">Animated Automation Flow</h3>
+          <div class="controls" aria-label="Animation controls">
+            <button type="button" id="playButton" aria-pressed="true">Play</button>
+            <button type="button" id="pauseButton" aria-pressed="false">Pause</button>
+          </div>
+        </div>
+        <div class="flow-canvas">
+          <div class="connector-track" aria-hidden="true"></div>
+          <div class="packet" aria-hidden="true"></div>
+          <div class="flow-grid">
+            <article class="step active" data-step="0">
+              <div class="step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+              <h4>1. Schedule Trigger</h4>
+              <p>n8n starts the automation every hour when the workflow is active.</p>
+              <code>Every Hour</code>
+            </article>
+            <article class="step" data-step="1">
+              <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/></svg></div>
+              <h4>2. Prepare Portfolio</h4>
+              <p>The ticker string is loaded from an environment variable and split into individual stocks.</p>
+              <code>PORTFOLIO_TICKERS</code>
+            </article>
+            <article class="step" data-step="2">
+              <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M7 16V8"/><path d="M12 16V5"/><path d="M17 16v-6"/></svg></div>
+              <h4>3. Fetch News</h4>
+              <p>For each ticker, the workflow searches Google News RSS for fresh stock headlines.</p>
+              <code>RSS Feed Read</code>
+            </article>
+            <article class="step" data-step="3">
+              <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h4"/></svg></div>
+              <h4>4. Clean + Group</h4>
+              <p>News items are normalized, aggregated by ticker, sorted by date, and trimmed to the latest articles.</p>
+              <code>Aggregate + Code</code>
+            </article>
+            <article class="step" data-step="4">
+              <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="m7.8 7.8 2.1 2.1"/><path d="m14.1 14.1 2.1 2.1"/><path d="m16.2 7.8-2.1 2.1"/><path d="m9.9 14.1-2.1 2.1"/></svg></div>
+              <h4>5. AI Analysis</h4>
+              <p>Groq generates a portfolio overview plus bullish, bearish, or neutral sentiment for each stock.</p>
+              <code>Groq Model</code>
+            </article>
+            <article class="step" data-step="5">
+              <div class="step-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/><path d="M7 20h10"/></svg></div>
+              <h4>6. Deliver Updates</h4>
+              <p>A short Telegram message and a designed HTML email are sent to the configured recipients.</p>
+              <code>Telegram + Gmail</code>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-board" aria-labelledby="tree-title">
+        <div class="tree-head">
+          <h3 id="tree-title">Workflow Tree Structure</h3>
+          <p>This view mirrors the real n8n node structure, including the Groq model branch into the AI agent and the final split into Telegram and Gmail delivery.</p>
+        </div>
+        <div class="workflow-tree">
+          <div class="tree" aria-label="Animated workflow tree">
+            <div class="tree-row"><div class="tree-node tree-step hot" data-tree-step="0"><strong>Every Hour</strong><span>Schedule trigger starts the run.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="1"><strong>Define Portfolio</strong><span>Loads ticker list from environment.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="2"><strong>Prepare Stock List</strong><span>Splits comma-separated tickers.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="3"><strong>Split Stocks</strong><span>Creates one item per ticker.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="4"><strong>Fetch Stock News</strong><span>Reads Google News RSS results.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="5"><strong>Clean News Items</strong><span>Keeps ticker, title, date, link, snippet.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="6"><strong>Aggregate News</strong><span>Collects all stock news items.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="7"><strong>Sorting and Selecting Info</strong><span>Groups by ticker and keeps recent articles.</span></div></div>
+            <div class="model-branch" aria-hidden="true"><div class="branch-line"></div><div class="tree-node small tree-step" data-tree-step="8"><strong>Groq Model</strong><span>Language model input.</span></div></div>
+            <div class="tree-line" aria-hidden="true"></div>
+            <div class="tree-row"><div class="tree-node tree-step" data-tree-step="9"><strong>Format Portfolio Report</strong><span>AI agent writes overview and sentiment.</span></div></div>
+            <div class="splitter" aria-hidden="true"><span></span><span></span></div>
+            <div class="tree-row outputs">
+              <div class="tree-node tree-step" data-tree-step="10"><strong>Send Telegram Message</strong><span>Short Markdown update.</span></div>
+              <div class="tree-node tree-step" data-tree-step="11"><strong>Format Email Content</strong><span>Builds the HTML email report.</span></div>
+            </div>
+            <div class="tree-row outputs">
+              <div class="tree-node small"><strong>Telegram Chat</strong><span>Receives quick alert.</span></div>
+              <div class="tree-node tree-step" data-tree-step="12"><strong>Send Email Update</strong><span>Sends final Gmail report.</span></div>
+            </div>
+          </div>
+          <div class="tree-legend">
+            <span><i></i>Highlighted node is the active stage</span>
+            <span><i style="background: var(--teal)"></i>Side branch supplies the AI model</span>
+            <span><i style="background: var(--green)"></i>Final branches deliver notifications</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-panel">
+        <div class="detail-card">
+          <h3>Runtime Setup</h3>
+          <p>After importing the workflow into n8n, reconnect Gmail, Telegram, and Groq credentials. Recipients are kept in environment variables so the repository remains safe to share publicly.</p>
+          <div class="env-list">
+            <code>GMAIL_SEND_TO=you@example.com</code>
+            <code>TELEGRAM_CHAT_ID=123456789</code>
+            <code>PORTFOLIO_TICKERS=ZENTEC, RAILTEL, DIXONTECH</code>
+          </div>
+        </div>
+        <div class="detail-card">
+          <h3>Execution Timeline</h3>
+          <div class="timeline">
+            <div class="timeline-item"><strong>00:00</strong><span>Schedule node starts the workflow.</span></div>
+            <div class="timeline-item"><strong>00:03</strong><span>Tickers are split and RSS requests begin.</span></div>
+            <div class="timeline-item"><strong>00:20</strong><span>Headlines are cleaned and grouped by stock.</span></div>
+            <div class="timeline-item"><strong>00:40</strong><span>AI creates summaries and sentiment labels.</span></div>
+            <div class="timeline-item"><strong>01:00</strong><span>Telegram and Gmail messages are delivered.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Built as a visual companion for <code>workflows/hourly-stock-portfolio-updates.json</code>.</footer>
+
+  <script>
+    const steps = Array.from(document.querySelectorAll(".step"));
+    const treeSteps = Array.from(document.querySelectorAll(".tree-step"));
+    const playButton = document.getElementById("playButton");
+    const pauseButton = document.getElementById("pauseButton");
+    let activeIndex = 0;
+    let timer = window.setInterval(advanceStep, 2000);
+
+    function setActiveStep(index) {
+      activeIndex = index;
+      steps.forEach((step, stepIndex) => step.classList.toggle("active", stepIndex === activeIndex));
+      const mappedTreeIndex = Math.round((activeIndex / Math.max(steps.length - 1, 1)) * Math.max(treeSteps.length - 1, 1));
+      treeSteps.forEach((step, stepIndex) => step.classList.toggle("hot", stepIndex === mappedTreeIndex));
+    }
+
+    function advanceStep() {
+      setActiveStep((activeIndex + 1) % steps.length);
+    }
+
+    function setPlaying(isPlaying) {
+      document.body.classList.toggle("paused", !isPlaying);
+      playButton.setAttribute("aria-pressed", String(isPlaying));
+      pauseButton.setAttribute("aria-pressed", String(!isPlaying));
+
+      if (isPlaying && !timer) timer = window.setInterval(advanceStep, 2000);
+      if (!isPlaying && timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    playButton.addEventListener("click", () => setPlaying(true));
+    pauseButton.addEventListener("click", () => setPlaying(false));
+    steps.forEach((step, index) => step.addEventListener("click", () => setActiveStep(index)));
+  </script>
+</body>
+</html>

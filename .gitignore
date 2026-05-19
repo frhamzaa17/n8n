@@ -1,0 +1,28 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# n8n local runtime data
+.n8n/
+n8n-data/
+
+# Dependencies and caches
+node_modules/
+.npm/
+.pnpm-store/
+
+# Logs
+*.log
+logs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build and coverage output
+dist/
+build/
+coverage/

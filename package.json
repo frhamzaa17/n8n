@@ -1,0 +1,21 @@
+{
+  "name": "hourly-stock-portfolio-updates",
+  "version": "1.0.0",
+  "description": "n8n workflow for hourly AI-assisted stock portfolio news and sentiment updates.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-workflows.mjs"
+  },
+  "keywords": [
+    "n8n",
+    "workflow",
+    "automation",
+    "stocks",
+    "portfolio",
+    "telegram",
+    "gmail",
+    "groq"
+  ],
+  "license": "MIT"
+}
