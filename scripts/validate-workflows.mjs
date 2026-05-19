@@ -10,7 +10,8 @@ if (files.length === 0) {
 
 for (const file of files) {
   const filePath = path.join(workflowDir, file);
-  const workflow = JSON.parse(await readFile(filePath, 'utf8'));
+  const content = (await readFile(filePath, 'utf8')).replace(/^\uFEFF/, '');
+  const workflow = JSON.parse(content);
 
   if (!workflow.name || !Array.isArray(workflow.nodes) || !workflow.connections) {
     throw new Error(`${file} is not a valid n8n workflow export.`);
