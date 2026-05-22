@@ -1,5 +1,7 @@
 # Hourly Stock Portfolio Updates
 
+https://frhamzaa17.github.io/n8n/
+
 An n8n workflow that monitors a configurable stock portfolio every hour, gathers recent market headlines from Google News RSS, summarizes sentiment with a Groq-hosted LLM, and sends the resulting update through Telegram and Gmail.
 
 > This project is for workflow automation and market-news monitoring only. It is not financial advice.
